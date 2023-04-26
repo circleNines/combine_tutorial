@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-class ViewModel: ObservableObject {
+class TableViewModel: ObservableObject {
     
     // 추가 될 Data가 어디에 붙을지 정해주는 Type
     enum AddingType {
@@ -25,7 +25,7 @@ class ViewModel: ObservableObject {
     @Published var list: [MyModel] = []
     
     init() {
-        print("ViewModel init!")
+        print("TableViewModel init!")
         
         let fileName = "person"
         let extensionType = "json"
@@ -41,8 +41,23 @@ class ViewModel: ObservableObject {
         }
     }
     
-    func prependData() {
+    func prependData(item: MyModel) {
         print(#fileID, #function, #line, "")
+        list.insert(item, at: 0)
         self.dataUpdateAction.send(.prepend)
+    }
+    
+    func appendData(item: MyModel) {
+        print(#fileID, #function, #line, "")
+        list.append(item)
+        self.dataUpdateAction.send(.append)
+    }
+}
+
+class InputViewModel: ObservableObject {
+    @Published var enableBtn: Bool = false
+    
+    init() {
+        print("InputViewModel init!")
     }
 }

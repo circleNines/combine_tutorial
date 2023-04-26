@@ -13,7 +13,7 @@ import Combine
 class MainViewController: UIViewController {
     
     var list: [MyModel] = []
-    var viewModel: ViewModel = ViewModel()
+    var tableViewModel: TableViewModel = TableViewModel()
     var cancelable = Set<AnyCancellable>()
     
     lazy var myTableView: ExTableView = {
@@ -23,22 +23,41 @@ class MainViewController: UIViewController {
         return view
     }()
     
+    private lazy var prependBtn: UIBarButtonItem = {
+        let btn = UIButton(type: .custom)
+        btn.accessibilityIdentifier = "prepend"
+        btn.setTitle("prepend", for: .normal)
+        btn.setTitleColor(.green, for: .normal)
+        btn.addTarget(self, action: #selector(buttonAction), for: .touchUpInside)
+        return UIBarButtonItem(customView: btn)
+    }()
+    
+    private lazy var appendBtn: UIBarButtonItem = {
+        let btn = UIButton(type: .custom)
+        btn.accessibilityIdentifier = "append"
+        btn.setTitle("append", for: .normal)
+        btn.setTitleColor(.orange, for: .normal)
+        btn.addTarget(self, action: #selector(buttonAction), for: .touchUpInside)
+        return UIBarButtonItem(customView: btn)
+    }()
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
         view.backgroundColor = .white
         title = "Combine Table"
         
-        let barButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(buttonAction))
-        navigationItem.rightBarButtonItem = barButton
-
+        navigationItem.leftBarButtonItem = prependBtn
+        navigationItem.rightBarButtonItem = appendBtn
     }
     
-    @objc private func buttonAction(sender: UIButton) {
-        //viewModel.list.insert(MyModel(title: "새로운 타이틀"), at: 0)
-        //viewModel.prependData()
+    @objc private func buttonAction(sender: UIBarButtonItem) {
+        
+        let type: TableViewModel.AddingType = sender.accessibilityIdentifier == "prepend" ? .prepend : .append
+        
         let ipViewController = InputViewController()
         ipViewController.delegate = self
+        ipViewController.type = type
         ipViewController.modalPresentationStyle = .popover
         ipViewController.modalTransitionStyle = .crossDissolve
         present(ipViewController, animated: true)
@@ -59,13 +78,11 @@ class MainViewController: UIViewController {
 extension MainViewController {
     
     private func setBinding() {
-        viewModel.$list.sink { models in
+        tableViewModel.$list.sink { models in
             self.list = models
-            self.myTableView.reloadData()
         }.store(in: &cancelable)
         
-        viewModel.dataUpdateAction.sink { [self] type in
-            print("addingType === \(type)")
+        tableViewModel.dataUpdateAction.sink { [self] type in
             switch type {
             case .append:
                 myTableView.appendingDataOffset()
@@ -77,28 +94,24 @@ extension MainViewController {
         }.store(in: &cancelable)
     }
     
-    func setInputData(with type: ViewModel.AddingType, name: String?, age: String?) {
+    func setInputData(with type: TableViewModel.AddingType, name: String?, age: String?) {
         
-         guard name != nil else { return }
-         guard age != nil else { return }
-         
-         var listed = viewModel.list
-         
-         switch type {
-         case .append:
-             print("append name: \(name), age: \(age)")
-             listed.insert(MyModel(title: name, detail: age), at: 0)
-             viewModel.list = listed
-             
-         case .prepend:
-             print("prepend name: \(name), age: \(age)")
-             listed.append(MyModel(title: name, detail: age))
-             viewModel.list = listed
-         }
-     }
+        guard name != nil else { return }
+        guard age != nil else { return }
+        
+        let item = MyModel(title: name, detail: age)
+        
+        switch type {
+        case .append:
+            tableViewModel.appendData(item: item)
+            
+        case .prepend:
+            tableViewModel.prependData(item: item)
+        }
+    }
 }
 
-extension MainViewController: UITableViewDelegate {  }
+extension MainViewController: UITableViewDelegate {}
 
 extension MainViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -137,10 +150,16 @@ class ExTableView: UITableView {
 
 extension ExTableView {
     fileprivate func prependingDataOffset() {
+        reloadData()
+        layoutIfNeeded()
+        
         setContentOffset(.zero, animated: true)
     }
     
     fileprivate func appendingDataOffset() {
-        setContentOffset(CGPoint(x: 0, y: contentSize.height), animated: true)
+        reloadData()
+        layoutIfNeeded()
+        
+        setContentOffset(CGPoint(x: 0, y: contentSize.height - frame.size.height), animated: true)
     }
 }

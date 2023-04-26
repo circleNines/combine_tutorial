@@ -113,18 +113,14 @@
 		38D3466629C6ED2A0081ED50 /* Combine_study */ = {
 			isa = PBXGroup;
 			children = (
-				38EF429829EBDBD00051E8D0 /* person.json */,
+				700D0F2129F8F9E000CEBF7D /* Resource */,
+				700D0F1E29F8F94E00CEBF7D /* Models */,
+				700D0F1F29F8F96000CEBF7D /* ViewModel */,
+				700D0F2029F8F97B00CEBF7D /* ViewController */,
 				38D3466729C6ED2A0081ED50 /* AppDelegate.swift */,
 				38D3466929C6ED2A0081ED50 /* SceneDelegate.swift */,
-				3810821829D2F6B5005A36F2 /* MainViewController.swift */,
-				38EF429C29EBED000051E8D0 /* InputViewController.swift */,
-				38EF429A29EBDC410051E8D0 /* CodableModel.swift */,
-				38D3469A29C6ED910081ED50 /* ViewModel.swift */,
-				38D3469C29C6ED990081ED50 /* Model.swift */,
 				38D3466D29C6ED2A0081ED50 /* Main.storyboard */,
-				38D3467329C6ED2A0081ED50 /* Assets.xcassets */,
 				38D3467529C6ED2A0081ED50 /* LaunchScreen.storyboard */,
-				38D3467829C6ED2A0081ED50 /* Info.plist */,
 				38D3467029C6ED2A0081ED50 /* Combine_study.xcdatamodeld */,
 			);
 			path = Combine_study;
@@ -145,6 +141,42 @@
 				38D3468D29C6ED2B0081ED50 /* Combine_studyUITestsLaunchTests.swift */,
 			);
 			path = Combine_studyUITests;
+			sourceTree = "<group>";
+		};
+		700D0F1E29F8F94E00CEBF7D /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				38EF429A29EBDC410051E8D0 /* CodableModel.swift */,
+				38D3469C29C6ED990081ED50 /* Model.swift */,
+			);
+			name = Models;
+			sourceTree = "<group>";
+		};
+		700D0F1F29F8F96000CEBF7D /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				38D3469A29C6ED910081ED50 /* ViewModel.swift */,
+			);
+			name = ViewModel;
+			sourceTree = "<group>";
+		};
+		700D0F2029F8F97B00CEBF7D /* ViewController */ = {
+			isa = PBXGroup;
+			children = (
+				3810821829D2F6B5005A36F2 /* MainViewController.swift */,
+				38EF429C29EBED000051E8D0 /* InputViewController.swift */,
+			);
+			name = ViewController;
+			sourceTree = "<group>";
+		};
+		700D0F2129F8F9E000CEBF7D /* Resource */ = {
+			isa = PBXGroup;
+			children = (
+				38D3467829C6ED2A0081ED50 /* Info.plist */,
+				38EF429829EBDBD00051E8D0 /* person.json */,
+				38D3467329C6ED2A0081ED50 /* Assets.xcassets */,
+			);
+			name = Resource;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

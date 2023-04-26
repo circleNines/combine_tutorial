@@ -8,11 +8,14 @@
 import Foundation
 import UIKit
 import SnapKit
+import Combine
 
 class InputViewController: UIViewController {
     
     var delegate: UIViewController?
+    var type: TableViewModel.AddingType = .prepend
     
+    // 이름 박스
     private lazy var nameBox: UITextField = {
         let textField = UITextField()
         textField.placeholder = "name"
@@ -21,9 +24,11 @@ class InputViewController: UIViewController {
         textField.borderStyle = .roundedRect
         textField.layer.cornerRadius = 10
         textField.textContentType = .name
+        textField.keyboardType = .namePhonePad
         return textField
     }()
     
+    // 나이 박스
     private lazy var ageBox: UITextField = {
         let textField = UITextField()
         textField.placeholder = "age"
@@ -31,14 +36,24 @@ class InputViewController: UIViewController {
         textField.delegate = self
         textField.borderStyle = .roundedRect
         textField.layer.cornerRadius = 10
-        textField.textContentType = .telephoneNumber
+        textField.keyboardType = .numberPad
         
         return textField
     }()
     
+    // 확인버튼
+    private lazy var doneBtn: UIButton = {
+        let btn = makeButton(title: "확인")
+        btn.isEnabled = false
+        return btn
+    }()
+    
+    // input view model
+    var inputViewModel: InputViewModel = InputViewModel()
+    var cancelable = Set<AnyCancellable>()
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
     }
     
     override func viewDidLoad() {
@@ -77,7 +92,6 @@ class InputViewController: UIViewController {
             make.width.equalToSuperview().multipliedBy(0.5)
         }
         
-        let doneBtn = makeButton(title: "확인")
         boxView.addSubview(doneBtn)
         doneBtn.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(16)
@@ -85,12 +99,19 @@ class InputViewController: UIViewController {
             make.width.equalToSuperview().multipliedBy(0.5)
         }
         
-        
         nameBox.becomeFirstResponder()
+        
+        setBinding()
     }
 }
 
 extension InputViewController {
+    
+    private func setBinding() {
+        inputViewModel.$enableBtn.sink { [self] isEnable in
+            doneBtn.isEnabled = isEnable
+        }.store(in: &cancelable)
+    }
     
     private func makeButton(title: String, color: UIColor = .systemBlue) -> UIButton {
         let btn = UIButton(type: .custom)
@@ -98,20 +119,22 @@ extension InputViewController {
         btn.setTitleColor(color, for: .normal)
         btn.layer.cornerRadius = 10
         btn.addTarget(self, action: #selector(buttonAction), for: .touchUpInside)
+        btn.setTitleColor(.lightGray, for: .disabled)
         return btn
     }
     
     @objc private func buttonAction(sender: UIButton) {
         if sender.titleLabel?.text == "확인" {
-            (delegate as? MainViewController)?.setInputData(with: .append, name: nameBox.text, age: ageBox.text)
+            (delegate as? MainViewController)?.setInputData(with: type, name: nameBox.text, age: ageBox.text)
+            dismiss(animated: true)
+        }
+        else if sender.titleLabel?.text == "취소" {
             dismiss(animated: true)
         }
         else {
             return
         }
     }
-    
-    func setInputData(with type: ViewModel.AddingType, name: String?, age: String?) {}
 }
 
 extension InputViewController: UITextFieldDelegate {
@@ -122,10 +145,35 @@ extension InputViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         print(#fileID, #function, #line, "")
         
+        if nameBox.text?.isEmpty == false && ageBox.text?.isEmpty == false {
+            (delegate as? MainViewController)?.setInputData(with: type, name: nameBox.text, age: ageBox.text)
+            dismiss(animated: true)
+            return true
+        }
+        
+        return false
+    }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        
+        // 나이 필드에는 숫자 값만
+        if textField == ageBox {
+            let allowedCharacters: CharacterSet = .decimalDigits
+            let characterSet = CharacterSet(charactersIn: string)
+            return allowedCharacters.isSuperset(of: characterSet)
+        }
+        
         return true
     }
     
     func textFieldDidChangeSelection(_ textField: UITextField) {
         print(#fileID, #function, #line, "")
+        
+        // 이름, 나이 필드에 값이 둘다 들어간 경우에만 '확인'버튼 활성화
+        if nameBox.text?.isEmpty == false && ageBox.text?.isEmpty == false {
+            inputViewModel.enableBtn = true
+        }else {
+            inputViewModel.enableBtn = false
+        }
     }
 }
