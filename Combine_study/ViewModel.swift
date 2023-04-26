@@ -16,13 +16,10 @@ class TableViewModel: ObservableObject {
       case append
     }
     
-    var prependCount: Int = 0 // 앞에 붙는 new Data 갯수
-    var appendCount: Int = 0  // 뒤에 붙는 new Data 갯수
+    private var tempList: [MyModel] = []    // Default Array
+    @Published var list: [MyModel] = []     // Published Array
     
     var dataUpdateAction = PassthroughSubject<AddingType, Never>() // <Output Type, Failure Type>
-
-    private var tempList: [MyModel] = [] // default array
-    @Published var list: [MyModel] = []
     
     init() {
         print("TableViewModel init!")
@@ -32,21 +29,25 @@ class TableViewModel: ObservableObject {
         guard let filePaths = Bundle.main.url(forResource: fileName, withExtension: extensionType) else { return }
         
         do {
+            // json parsing
             let data = try Data(contentsOf: filePaths)
             guard let json = try? JSONDecoder().decode(CodableModel.self, from: data) else { return }
             json.list?.forEach({ tempList.append(MyModel(title: $0.name, detail: String($0.age ?? 0))) })
+            
             self.list = tempList
         }catch {
             print("error === \(error.localizedDescription)")
         }
     }
     
+    // added to prepend
     func prependData(item: MyModel) {
         print(#fileID, #function, #line, "")
         list.insert(item, at: 0)
         self.dataUpdateAction.send(.prepend)
     }
     
+    // added to append
     func appendData(item: MyModel) {
         print(#fileID, #function, #line, "")
         list.append(item)
@@ -54,6 +55,7 @@ class TableViewModel: ObservableObject {
     }
 }
 
+// 정보 입력 ViewModel
 class InputViewModel: ObservableObject {
     @Published var enableBtn: Bool = false
     

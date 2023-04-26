@@ -14,7 +14,7 @@ class MainViewController: UIViewController {
     
     var list: [MyModel] = []
     var tableViewModel: TableViewModel = TableViewModel()
-    var cancelable = Set<AnyCancellable>()
+    var cancelable = Set<AnyCancellable>() // disposebag
     
     lazy var myTableView: ExTableView = {
         let view = ExTableView(frame: .zero, style: .plain)
@@ -78,11 +78,13 @@ class MainViewController: UIViewController {
 extension MainViewController {
     
     private func setBinding() {
+        
         tableViewModel.$list.sink { models in
             self.list = models
         }.store(in: &cancelable)
         
         tableViewModel.dataUpdateAction.sink { [self] type in
+            // type에 따른 tableView 위치 조정
             switch type {
             case .append:
                 myTableView.appendingDataOffset()
